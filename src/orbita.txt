@@ -1,0 +1,66 @@
+// 1. Definimos el Trait para cualquier cuerpo que orbite
+trait Orbitar {
+    fn describir_orbita(&self);
+    fn avanzar_orbita(&mut self, dias: &u32); 
+}
+
+// 2. Creamos la estructura para un Planeta
+struct Planeta {
+    nombre: String,
+    periodo_orbital: f64, // En días terrestres
+    dias_transcurridos: u32,
+}
+
+// 3. Implementamos el Trait para el Planeta
+impl Orbitar for Planeta {
+    fn describir_orbita(&self) {
+        // Usamos '&self.nombre' (referencia) para acceder al nombre sin moverlo
+        let progreso = (self.dias_transcurridos as f64 / self.periodo_orbital) * 100.0;
+        println!(
+            "El planeta {} ha completado el {:.2}% de su año.",
+            self.nombre, progreso
+        );
+    }
+
+    fn avanzar_orbita(&mut self, dias: &u32) {
+        // USANDO '*': Desreferenciamos 'dias' para obtener su valor u32 interno
+        // y poder sumarlo a dias_transcurridos
+        self.dias_transcurridos += *dias;
+    }
+}
+
+// Función que acepta cualquier cosa que implemente el Trait Orbitar mediante una referencia
+fn simular_dia_en_el_cosmos(cuerpo: &mut impl Orbitar, dias_a_pasar: &u32) {
+    cuerpo.avanzar_orbita(dias_a_pasar);
+    cuerpo.describir_orbita();
+}
+
+fn main() {
+    // Creamos a la Tierra (tarda 365.25 días en dar la vuelta al Sol)
+    let mut tierra = Planeta {
+        nombre: String::from("Tierra"),
+        periodo_orbital: 365.25,
+        dias_transcurridos: 0,
+    };
+
+    let tiempo_simulacion: u32 = 90; // 90 días de viaje espacial
+    
+    // Pasamos referencias (&) a la función
+    println!("--- Iniciando simulación espacial ---");
+    simular_dia_en_el_cosmos(&mut tierra, &tiempo_simulacion);
+
+    // --- BONUS: Uso explícito de * para modificar un multiplicador ---
+    let mut factor_velocidad: u32 = 2;
+    
+    {
+        // Creamos una referencia mutable al factor
+        let ref_factor = &mut factor_velocidad; 
+        // Usamos '*' para cambiar el valor original de 2 a 4
+        *ref_factor = 4; 
+    }
+
+    println!("\n¡Hipersalto activo! Multiplicador de tiempo actual: {}x", factor_velocidad);
+    
+    let nuevo_tiempo = tiempo_simulacion * factor_velocidad; // 90 * 4 = 360 días
+    simular_dia_en_el_cosmos(&mut tierra, &nuevo_tiempo);
+}
